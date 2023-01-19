@@ -1,3 +1,8 @@
+<%@page import="com.tech.blog.entities.Category" %>
+<%@page import="com.tech.blog.dao.PostDao" %>
+<%@page import="com.tech.blog.helper.ConnectionProvider" %>
+<%@page import="java.util.*" %>
+
 <nav class="navbar navbar-expand-lg navbar-dark primary-color">
 	  <a class="navbar-brand" href="index.jsp"><span class="fa fa-wpforms"></span>  Tech Bloging</a>
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -6,8 +11,9 @@
 	
 	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 	    <ul class="navbar-nav mr-auto">
-	      <li class="nav-item active">
-	        <a class="nav-link" href="#"><span class="fa fa-paste"></span> Blog page <span class="sr-only">(current)</span></a>
+	      
+              <li class="nav-item active">
+                  <a class="nav-link" href="profile.jsp"><span class="fa fa-paste"></span> Blog page <span class="sr-only">(current)</span></a>
 	      </li>
 	      
 	      <li class="nav-item dropdown">
@@ -15,10 +21,20 @@
 	          <span class="fa fa-navicon"></span> Categories
 	        </a>
 	        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-	          <a class="dropdown-item" href="#">Programming languages</a>
-	          <a class="dropdown-item" href="#">Project Code</a>
+	          <%
+                     PostDao d1= new PostDao(ConnectionProvider.getConnection());
+                     ArrayList<Category> list1=d1.getAllCategories();
+                     int i=0;
+                     for(i=0; i<list1.size()-1; i++){
+                     %>
+                         
+                      <a class="dropdown-item" href="#"><%= list1.get(i).getName() %></a>
+                     <%
+                      }
+                     %>
+                    
 	          <div class="dropdown-divider"></div>
-	          <a class="dropdown-item" href="#">Others</a>
+	          <a class="dropdown-item" href="#"><%= list1.get(i).getName() %></a>
 	        </div>
 	      </li>
 	      <li class="nav-item">

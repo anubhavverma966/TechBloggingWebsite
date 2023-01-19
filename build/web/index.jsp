@@ -1,6 +1,8 @@
 <%@page import="com.tech.blog.helper.ConnectionProvider"%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
  <%@page import="java.sql.*" %>
+<%@page import="com.tech.blog.dao.PostDao"%>
+<%@page import="com.tech.blog.entities.Post"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,6 +17,10 @@
 		.banner-background{
 			clip-path: polygon(30% 0%, 70% 0%, 100% 0, 100% 93%, 65% 98%, 24% 94%, 0 98%, 0 0);
 		}
+                .read-more{
+                    height: 50px;
+                    overflow: hidden;
+                }
 	</style>
 </head>
 <body>
@@ -39,72 +45,55 @@
 	<br>
 	
 	<!-- cards -->
-	<div class= "container">
+        <div class= "container">
+            
+                        
 		<div class= "row mb-2">
+                    
+                    <%
+                    PostDao d= new PostDao(ConnectionProvider.getConnection());
+                    List<Post> posts= new ArrayList<>();
+                    posts= d.getAllPosts();
+                    i=0;
+                    for(i=0; i<3; i++){
+                    %>
 			<div class= "col-md-4 mb-4">
 				<div class="card" >
 				  
 				  <div class="card-body">
-				    <h5 class="card-title">Java Programming</h5>
-				    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-				    <a href="#" class="btn primary-color text-white">Read More</a>
+				    <h5 class="card-title"><%= posts.get(i).getpTitle() %></h5>
+				    <p class="card-text read-more"><%= posts.get(i).getpContent() %></p>
+				    <a href="show_blog_page.jsp?post_id=<%= posts.get(i).getPid()%>" class="btn primary-color text-white">Read More</a>
 				  </div>
 				</div>
 			</div>
-			<div class= "col-md-4 mb-4">
-				<div class="card" >
-				  
-				  <div class="card-body">
-				    <h5 class="card-title">Java Programming</h5>
-				    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-				    <a href="#" class="btn primary-color text-white">Read More</a>
-				  </div>
-				</div>
-			</div>
-			<div class= "col-md-4 mb-4">
-				<div class="card" >
-				  
-				  <div class="card-body">
-				    <h5 class="card-title">Java Programming</h5>
-				    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-				    <a href="#" class="btn primary-color text-white">Read More</a>
-				  </div>
-				</div>
-			</div>
+                    <%
+                       }
+
+                    %>   
+                    
 		</div>
 		
 		
 		<div class= "row">
+                    <%
+                    i=3;
+                    for(; i<6; i++){
+                    %>
 			<div class= "col-md-4 mb-4">
 				<div class="card" >
 				  
 				  <div class="card-body">
-				    <h5 class="card-title">Java Programming</h5>
-				    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-				    <a href="#" class="btn primary-color text-white">Read More</a>
+				    <h5 class="card-title"><%= posts.get(i).getpTitle() %></h5>
+				    <p class="card-text read-more"><%= posts.get(i).getpContent() %></p>
+				    <a href="show_blog_page.jsp?post_id=<%= posts.get(i).getPid()%>" class="btn primary-color text-white">Read More</a>
 				  </div>
 				</div>
 			</div>
-			<div class= "col-md-4 mb-4">
-				<div class="card" >
-				  
-				  <div class="card-body">
-				    <h5 class="card-title">Java Programming</h5>
-				    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-				    <a href="#" class="btn primary-color text-white">Read More</a>
-				  </div>
-				</div>
-			</div>
-			<div class= "col-md-4 mb-4">
-				<div class="card" >
-				  
-				  <div class="card-body">
-				    <h5 class="card-title">Java Programming</h5>
-				    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-				    <a href="#" class="btn primary-color text-white">Read More</a>
-				  </div>
-				</div>
-			</div>
+                    <%
+                       }
+
+                    %>
 		</div>
 		
 	</div>

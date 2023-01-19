@@ -32,6 +32,12 @@ response.sendRedirect("login_page.jsp");
 		.banner-background{
 			clip-path: polygon(30% 0%, 70% 0%, 100% 0, 100% 93%, 65% 98%, 24% 94%, 0 98%, 0 0);
 		}
+                
+                body{
+                    background: url(image/blog.jpg);
+                    background-size: cover;
+                    background-attachment: fixed; 
+                }
 	</style>
     </head>
     <body>
@@ -46,7 +52,7 @@ response.sendRedirect("login_page.jsp");
 	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 	    <ul class="navbar-nav mr-auto">
 	      <li class="nav-item active">
-	        <a class="nav-link" href="#"><span class="fa fa-paste"></span> Blog page <span class="sr-only">(current)</span></a>
+	        <a class="nav-link" href="profile.jsp"><span class="fa fa-paste"></span> Blog page <span class="sr-only">(current)</span></a>
 	      </li>
 	      
 	      <li class="nav-item dropdown">
@@ -54,10 +60,22 @@ response.sendRedirect("login_page.jsp");
 	          <span class="fa fa-navicon"></span> Categories
 	        </a>
 	        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-	          <a class="dropdown-item" href="#">Programming languages</a>
-	          <a class="dropdown-item" href="#">Project Code</a>
+	          
+	          <%
+                     PostDao d1= new PostDao(ConnectionProvider.getConnection());
+                     ArrayList<Category> list1=d1.getAllCategories();
+                     int i=0;
+                     for(i=0; i<list1.size()-1; i++){
+                     %>
+                         
+                     <a class="dropdown-item c-link-1 " onclick="getPosts1(<%= list1.get(i).getCid() %>, <%= i %>)" href="#"><%= list1.get(i).getName() %></a>
+                     <%
+                      }
+                     %>
+                    
 	          <div class="dropdown-divider"></div>
-	          <a class="dropdown-item" href="#">Others</a>
+	          <a class="dropdown-item c-link-1" onclick="getPosts1(<%= list1.get(i).getCid() %>, <%= i %>)" href="#"><%= list1.get(i).getName() %></a>
+	        
 	        </div>
 	      </li>
 	      <li class="nav-item">
@@ -85,7 +103,6 @@ response.sendRedirect("login_page.jsp");
                   <!-- navbar ends -->
                   
                   
-        
                                             <%
                                             Message m=(Message)session.getAttribute("msg");
                                             if(m!=null){
@@ -97,6 +114,56 @@ response.sendRedirect("login_page.jsp");
                                                 session.removeAttribute("msg");
                                                 }
                                             %>
+                                           
+                                            
+        <!--main body of the page-->
+        
+        <main>
+            <div class="container">
+                <div class="row mt-4">
+                    <!--first col-->
+                    <div class="col-md-3">
+                        <!--categories-->
+                        <div class="list-group">
+                            <a href="#" onclick="getPosts(0, 0)" class="c-link list-group-item list-group-item-action active">
+                              All Posts
+                            </a>
+                            <!--categories-->
+                            
+                            <%
+                                int j=1;
+                                for(Category cc:list1){
+                            %>
+                                
+                               <a href="#" onclick="getPosts(<%= cc.getCid() %>, <%= j %>)" class=" c-link list-group-item list-group-item-action"><%= cc.getName() %></a>
+                                
+                            <%
+                                j++;
+                                }
+                            %>
+                            
+                            
+                            
+                        </div>
+                    </div>
+                    <!--second column-->
+                    <div class="col-md-9">
+                        <!--posts-->
+                        <div class="conatiner text-center" id="loader">
+                            <i class="fa fa-refresh fa-4x fa-spin"></i>
+                            <h3 class="mt-3">Loading...</h3>
+                        </div>
+                        <div class="container-fluid"  id="post-container">
+
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </main>
+        
+        <!--main body ends-->
         
         <!-- Profile modal -->
         
@@ -207,7 +274,7 @@ response.sendRedirect("login_page.jsp");
         </div>
                                             
                                             
-        <!-- Post modal -->
+        <!-- add Post modal -->
         
         
 
@@ -229,13 +296,20 @@ response.sendRedirect("login_page.jsp");
                       <div class="form-group">
                           <select name="cid" class="form-control">
                               <option selected disabled>---Select Category---</option>
+                              <%
+                                  PostDao postd= new PostDao(ConnectionProvider.getConnection());
+                                  ArrayList<Category> list= postd.getAllCategories();
+                                  for(Category c:list){
+                                  
+                              %>
+                                  
+                                  <option value="<%= c.getCid() %>"><%= c.getName()%></option>
+                                  
+                              <%
+                                  }
+                              %>
                               
-                              
-                              <option value="1">Java Programming</option>
-                              <option value="2">Python Programming</option>
-                              <option value="3">Web Technology</option>
-                              
-                              
+                             
                              
                           </select>
                       </div>
@@ -316,17 +390,92 @@ response.sendRedirect("login_page.jsp");
                                 swal("Good job!", "Saved Successfully", "success");
                             }
                             else{
-                                swal("Errror", "Something Went Wrong! Try Again...", "error");
+                                swal("Error", "Something Went Wrong! Try Again...", "error");
                             }
                         },
                         error: function(jqXHR, textStatus, errorThrown){
-                            swal("Errror", "Something Went Wrong! Try Again...", "error");
+                            swal("Error", "Something Went Wrong! Try Again...", "error");
                         },
                         processData: false,
                         contentType: false
                     })
                 })
             })
+        </script>
+        
+        <!--loading post using ajax-->
+        
+        <script>
+            
+            function getPosts(catId, i){
+                
+                $("#loader").show();
+                $("#post-container").hide();
+                
+                $(".c-link").removeClass('active')
+                $(".c-link-1").removeClass('active')
+                
+                
+                if(i==0){
+                 $.ajax({
+                    url: "load_posts.jsp",
+                    data: {cid:catId},
+                    success: function (data, textStatus, jqXHR) {
+                        console.log(data);
+                        $("#loader").hide();
+                        $("#post-container").show();
+                        $('#post-container').html(data)
+                        $('.c-link').eq(i).addClass('active')
+                        
+                    }
+                 })
+                }
+                else{
+                 $.ajax({
+                    url: "load_posts.jsp",
+                    data: {cid:catId},
+                    success: function (data, textStatus, jqXHR) {
+                        console.log(data);
+                        $("#loader").hide();
+                        $("#post-container").show();
+                        $('#post-container').html(data)
+                        $('.c-link').eq(i).addClass('active')
+                        i--
+                        $('.c-link-1').eq(i).addClass('active')
+                    }
+                 })
+                }
+            }
+            
+            function getPosts1(catId, i){
+                
+                $("#loader").show();
+                $("#post-container").hide();
+                
+                $(".c-link").removeClass('active')
+                $(".c-link-1").removeClass('active')
+                
+                 $.ajax({
+                    url: "load_posts.jsp",
+                    data: {cid:catId},
+                    success: function (data, textStatus, jqXHR) {
+                        console.log(data);
+                        $("#loader").hide();
+                        $("#post-container").show();
+                        $('#post-container').html(data)
+                        $('.c-link-1').eq(i).addClass('active')
+                        i++
+                        $('.c-link').eq(i).addClass('active')
+                        
+                    }
+                })
+            }
+            
+            $(document).ready(function (e){
+                getPosts(0, 0)
+            })
+            
+            
         </script>
     </body>
 </html>

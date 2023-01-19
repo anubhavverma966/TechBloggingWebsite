@@ -8,6 +8,9 @@ import com.tech.blog.entities.Category;
 import com.tech.blog.entities.Post;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -21,12 +24,12 @@ public class PostDao {
     }
     
     public ArrayList<Category> getAllCategories(){
-        ArrayList<Category> list = null;
+        ArrayList<Category> list = new ArrayList<>();
         
         try {
-            String query= "select * from categories";
+            String q= "select * from categories";
             Statement st= this.con.createStatement();
-            ResultSet set= st.executeQuery(query);
+            ResultSet set= st.executeQuery(q);
             
             while(set.next()){
                 int cid= set.getInt("cid");
@@ -47,6 +50,65 @@ public class PostDao {
     }
     
     
+    public List<Post> getAllPosts(){
+        List<Post> list = new ArrayList<>();
+        //fetching all posts
+        try {
+            PreparedStatement p= con.prepareStatement("select * from posts order by pid desc");
+            ResultSet set= p.executeQuery();
+            
+            while(set.next()){
+                int pid= set.getInt("pid");
+                String pTitle= set.getString("pTitle");
+                String pContent= set.getString("pContent");
+                String pCode= set.getString("pCode");
+                String pPic= set.getString("pPic");
+                Timestamp date= set.getTimestamp("pDate");
+                int catId= set.getInt("catId");
+                int userId= set.getInt("userId");
+                
+                Post post= new Post(pid, pTitle, pContent, pCode, pPic, date, catId, userId);
+                
+                list.add(post);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return list;
+    }
+    
+    public List<Post> getPostByCatId(int catId){
+        List<Post> list= new ArrayList<>();
+        //fetching posts by their post 
+        
+        try {
+            PreparedStatement p= con.prepareStatement("select * from posts where catId=?");
+            p.setInt(1, catId);
+            ResultSet set= p.executeQuery();
+            
+            while(set.next()){
+                int pid= set.getInt("pid");
+                String pTitle= set.getString("pTitle");
+                String pContent= set.getString("pContent");
+                String pCode= set.getString("pCode");
+                String pPic= set.getString("pPic");
+                Timestamp date= set.getTimestamp("pDate");
+                int userId= set.getInt("userId");
+                
+                Post post= new Post(pid, pTitle, pContent, pCode, pPic, date, catId, userId);
+                
+                list.add(post);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return list;
+    }
+    
     public boolean savePost(Post p){
         boolean f= false;
         try {
@@ -66,5 +128,35 @@ public class PostDao {
         }
         
         return f;
+    }
+    
+    public Post getPostByPostId(int postId){
+        Post post= null;
+        
+        String q="select * from posts where pid=?";
+        try {
+            PreparedStatement p= this.con.prepareStatement(q);
+        
+            p.setInt(1, postId);
+            
+            ResultSet set= p.executeQuery();
+            
+            if(set.next()){
+                int pid= set.getInt("pid");
+                String pTitle= set.getString("pTitle");
+                String pContent= set.getString("pContent");
+                String pCode= set.getString("pCode");
+                String pPic= set.getString("pPic");
+                Timestamp date= set.getTimestamp("pDate");
+                int userId= set.getInt("userId");
+                int cid= set.getInt("catId");
+                
+                post= new Post(pid, pTitle, pContent, pCode, pPic, date, cid, userId);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        return post;
     }
 }

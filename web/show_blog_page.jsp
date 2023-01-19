@@ -1,10 +1,21 @@
+<%-- 
+    Document   : show_blog_page
+    Created on : 09-Jan-2023, 12:54:00 am
+    Author     : hp
+--%>
 <%@page import="com.tech.blog.entities.User" %>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page errorPage= "error_page.jsp" %>
+<%@page import="com.tech.blog.helper.ConnectionProvider"%>
+<%@page import="com.tech.blog.dao.PostDao"%>
+<%@page import="com.tech.blog.dao.UserDao"%>
+<%@page import="com.tech.blog.dao.LikeDao"%>
+<%@page import="com.tech.blog.entities.Post"%>
+<%@page import="java.util.ArrayList" %>
+<%@page import="java.text.*" %>
 <%@page import="com.tech.blog.entities.Message" %>
 <%@page import="com.tech.blog.entities.Category" %>
-<%@page import="com.tech.blog.dao.PostDao" %>
-<%@page import="com.tech.blog.helper.ConnectionProvider" %>
-<%@page import="java.util.ArrayList" %>
-<%@page errorPage="error_page.jsp" %>
+
 
 <% 
 
@@ -17,32 +28,64 @@ response.sendRedirect("login_page.jsp");
 %>
 
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    int postId= Integer.parseInt(request.getParameter("post_id"));
+    
+    PostDao d= new PostDao(ConnectionProvider.getConnection());
+    
+    Post p= d.getPostByPostId(postId);
+%>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
-        
+        <title><%= p.getpTitle() %></title>
         <!-- css -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <link href="css/mystyle.css" rel="stylesheet" type="text/css"/>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<style>
+            
+            body{
+                background: url(image/blog.jpg);
+                background-size: cover;
+                background-attachment: fixed; 
+            }
 		.banner-background{
 			clip-path: polygon(30% 0%, 70% 0%, 100% 0, 100% 93%, 65% 98%, 24% 94%, 0 98%, 0 0);
 		}
                 
-                body{
-                    background: url(image/blog.jpg);
-                    background-size: cover;
-                    background-attachment: fixed; 
+                .post-title{
+                    font-weight: 100;
+                    font-size: 30px;
+                }
+                
+                .post-content{
+                    font-weight: 100;
+                    font-size: 24px;
+                }
+                
+                .post-date{
+                    font-style: italic;
+                    font-weight: bold;
+                }
+                
+                .post-user-info{
+                    font-size: 20px;
+                    
+                }
+                
+                .row-user{
+                    border: 1px solid #7e57c2;
+                    padding-top: 15px; 
                 }
 	</style>
+        
     </head>
     <body>
         
-        <!-- navbar -->
+        
+         <!-- navbar -->
        <nav class="navbar navbar-expand-lg navbar-dark primary-color">
 	  <a class="navbar-brand" href="index.jsp"><span class="fa fa-wpforms"></span>  Tech Bloging</a>
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +95,7 @@ response.sendRedirect("login_page.jsp");
 	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 	    <ul class="navbar-nav mr-auto">
 	      <li class="nav-item active">
-	        <a class="nav-link" href="profile.jsp"><span class="fa fa-paste"></span> Blog page <span class="sr-only">(current)</span></a>
+                  <a class="nav-link" href="profile.jsp"><span class="fa fa-paste"></span> Blog page <span class="sr-only">(current)</span></a>
 	      </li>
 	      
 	      <li class="nav-item dropdown">
@@ -100,72 +143,66 @@ response.sendRedirect("login_page.jsp");
 	  </div>
         </nav>
                   
-                  <!-- navbar ends -->
-                  
-                  
-                                            <%
-                                            Message m=(Message)session.getAttribute("msg");
-                                            if(m!=null){
-                                            %>
-                                            <div class="alert <%= m.getCssClass() %>" role="alert">
-                                                <%= m.getContent()%>
-                                            </div>
-                                            <%
-                                                session.removeAttribute("msg");
-                                                }
-                                            %>
-                                           
-                                            
-        <!--main body of the page-->
-        
-        <main>
-            <div class="container">
-                <div class="row mt-4">
-                    <!--first col-->
-                    <div class="col-md-3">
-                        <!--categories-->
-                        <div class="list-group">
-                            <a href="#" onclick="getPosts(0, 0)" class="c-link list-group-item list-group-item-action active">
-                              All Posts
-                            </a>
-                            <!--categories-->
-                            
-                            <%
-                                int j=1;
-                                for(Category cc:list1){
-                            %>
-                                
-                               <a href="#" onclick="getPosts(<%= cc.getCid() %>, <%= j %>)" class=" c-link list-group-item list-group-item-action"><%= cc.getName() %></a>
-                                
-                            <%
-                                j++;
-                                }
-                            %>
-                            
-                            
-                            
-                        </div>
-                    </div>
-                    <!--second column-->
-                    <div class="col-md-9">
-                        <!--posts-->
-                        <div class="conatiner text-center" id="loader">
-                            <i class="fa fa-refresh fa-4x fa-spin"></i>
-                            <h3 class="mt-3">Loading...</h3>
-                        </div>
-                        <div class="container-fluid"  id="post-container">
-
-                        </div>
+       <!-- navbar ends -->
+       
+       
+       
+       <!--main body of post-->
+       
+       <div class="container">
+           
+           <div class="row my-4">
+               <div class="col-md-8 offset-md-2">
+                   
+                   <div class="card">
+                       
+                       <div class="card-header primary-color text-white">
+                           
+                           <h4 class="post-title"><%= p.getpTitle()%></h4>
+                       </div>
+                       
+                       <div class="card-body ">
+                           
+                           <img class="card-img-top my-2 " src="blog_pics/<%= p.getpPic()%>" alt="Blog Image" >
+                           
+                           <div class="row my-3 row-user" >
+                               <div class="col-md-8"> 
+                                   
+                                   <% UserDao ud= new UserDao(ConnectionProvider.getConnection());%>
+                                   
+                                   <p class="post-user-info"><a href="#!"><%= ud.getUserByUserId(p.getUserId()).getName()%></a>  has Posted this Blog  </p>
+                               </div>
+                               <div class="col-md-4"> 
+                                   <p class="post-date"><%=  DateFormat.getDateTimeInstance().format(p.getpDate()) %></p>
+                               </div>
+                           </div>
+                           <p class="post-content"><%= p.getpContent()%></p>
+                           
+                           <br>
+                           <br>
+                           <div class="post-code">
+                              <pre><%= p.getpCode() %></pre>
+                           </div>
+                       </div>
+                       
+                       <div class="card-footer primary-color">
+                           
+                           <%
+                           LikeDao ld= new LikeDao(ConnectionProvider.getConnection());
+                           %>
+                           
+                           <a href="#!" onclick="doLike(<%= p.getPid()%>, <%= user.getId()%>)" class="btn btn-outline-light btn-sm"> <i class="fa fa-thumbs-o-up"></i> <span class="like-counter"><%= ld.countLikeOnPost(p.getPid())%></span></a>
                         
-                    </div>
-                    
-                </div>
-            </div>
-        </main>
-        
-        <!--main body ends-->
-        
-        <!-- Profile modal -->
+                           <a href="#!" class="btn btn-outline-light btn-sm"> <i class="fa fa-commenting-o"></i> <span>20</span></a>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+       
+       <!--end of main body-->
+       
+            <!-- Profile modal -->
         
 
         <!-- Modal -->
@@ -402,50 +439,9 @@ response.sendRedirect("login_page.jsp");
                 })
             })
         </script>
-        
-        <!--loading post using ajax-->
-        
+       
         <script>
             
-            function getPosts(catId, i){
-                
-                $("#loader").show();
-                $("#post-container").hide();
-                
-                $(".c-link").removeClass('active')
-                $(".c-link-1").removeClass('active')
-                
-                
-                if(i==0){
-                 $.ajax({
-                    url: "load_posts.jsp",
-                    data: {cid:catId},
-                    success: function (data, textStatus, jqXHR) {
-                        console.log(data);
-                        $("#loader").hide();
-                        $("#post-container").show();
-                        $('#post-container').html(data)
-                        $('.c-link').eq(i).addClass('active')
-                        
-                    }
-                 })
-                }
-                else{
-                 $.ajax({
-                    url: "load_posts.jsp",
-                    data: {cid:catId},
-                    success: function (data, textStatus, jqXHR) {
-                        console.log(data);
-                        $("#loader").hide();
-                        $("#post-container").show();
-                        $('#post-container').html(data)
-                        $('.c-link').eq(i).addClass('active')
-                        i--
-                        $('.c-link-1').eq(i).addClass('active')
-                    }
-                 })
-                }
-            }
             
             function getPosts1(catId, i){
                 
@@ -471,11 +467,9 @@ response.sendRedirect("login_page.jsp");
                 })
             }
             
-            $(document).ready(function (e){
-                getPosts(0, 0)
-            })
             
             
         </script>
+        
     </body>
 </html>

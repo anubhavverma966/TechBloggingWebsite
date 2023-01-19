@@ -4,23 +4,14 @@
  */
 package com.tech.blog.servlets;
 
-import com.tech.blog.dao.PostDao;
-import com.tech.blog.dao.UserDao;
-import com.tech.blog.entities.Message;
-import com.tech.blog.entities.Post;
-import com.tech.blog.entities.User;
+import com.tech.blog.dao.LikeDao;
 import com.tech.blog.helper.ConnectionProvider;
-import com.tech.blog.helper.Helper;
+import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.MultipartConfig;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,9 +19,7 @@ import java.util.logging.Logger;
  *
  * @author hp
  */
-
-@MultipartConfig
-public class AddPostServlet extends HttpServlet {
+public class LikeServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -46,38 +35,27 @@ public class AddPostServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
+            String operation= request.getParameter("operation");
+            int uid= Integer.parseInt(request.getParameter("uid"));
+            int pid= Integer.parseInt(request.getParameter("pid"));
             
-            int cid= Integer.parseInt(request.getParameter("cid"));
-            //out.println(cid1);
+//            out.println("data from server");
+//            out.println(operation);
+//            out.println(uid);
+//            out.println(pid);
             
+            LikeDao ldao= new LikeDao(ConnectionProvider.getConnection());
             
-            String pTitle= request.getParameter("pTitle");
-            String pContent= request.getParameter("pContent");
-            String pCode= request.getParameter("pCode");
-            Part part= request.getPart("pic");
-            HttpSession session= request.getSession();
-            User user= (User)session.getAttribute("currentUser");
-           
-            
-    //        out.println("your post title is" + pTitle);
-      //      out.println(part.getSubmittedFileName());
-            
-            Post p= new Post(pTitle, pContent, pCode, part.getSubmittedFileName(), null, cid, user.getId());
-            PostDao dao= new PostDao(ConnectionProvider.getConnection());
-            
-            if(dao.savePost(p)){
-                
-                String path= request.getRealPath("/")+"blog_pics"+File.separator+part.getSubmittedFileName() ;
-                Helper.saveFile(part.getInputStream(), path);
-                out.println("done");
+            if(operation.equals("like")){
+                if(ldao.isLikedByUser(pid, uid)){
+                    boolean f= ldao.deleteLike(pid, uid);
+                    out.println("deleted");
+                }
+                else{
+                    boolean f= ldao.insertLike(pid, uid);
+                    out.println(f);
+                }
             }
-            else{
-                out.println("error");
-            }
-            
-           
-        }catch(Exception e){
-            e.printStackTrace();
         }
     }
 
@@ -96,7 +74,7 @@ public class AddPostServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (Exception ex) {
-            Logger.getLogger(AddPostServlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(LikeServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -114,7 +92,7 @@ public class AddPostServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (Exception ex) {
-            Logger.getLogger(AddPostServlet.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(LikeServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
